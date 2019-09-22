@@ -35,6 +35,7 @@ abstract class DataTableController extends Controller
     {
         return response()->json([
             'data' => [
+                'table' => $this->getTableName(),
                 'displayable' => array_values($this->getDisplayableColumns()),
                 'records' => $this->getRecords()
             ]
@@ -47,6 +48,10 @@ abstract class DataTableController extends Controller
         return array_diff($this->getDatabaseColumns(), $this->builder->getModel()->getHidden());
     }
 
+    protected function getTableName()
+    {
+        return ucfirst($this->builder->getModel()->getTable());
+    }
     protected function getDatabaseColumns()
     {
         return Schema::getColumnListing($this->builder->getModel()->getTable());

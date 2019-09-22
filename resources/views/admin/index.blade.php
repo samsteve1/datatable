@@ -2,8 +2,8 @@
 @section('content')
 <div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            Datatable
+        <div class="col-md-12">
+            <data-table endpoint="{{ route('users.index') }}"></data-table>
         </div>
     </div>
 </div>

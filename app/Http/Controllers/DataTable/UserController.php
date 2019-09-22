@@ -16,7 +16,7 @@ class UserController extends DataTableController
     public function getDisplayableColumns()
     {
         return [
-            'id', 'name', 'email', 'created_at', 'updated_at'
+            'id', 'name', 'email', 'created_at', 'updated_at', 'telephone'
         ];
     }
 
