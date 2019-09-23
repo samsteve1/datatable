@@ -10,14 +10,16 @@
                     <thead>
                         <tr>
                             <th v-for="column in response.displayable">
-                                {{ column }}
+                               <span class="sortable" @click="sortBy(column)"> {{ column }}</span>
+
+                               <div v-if="sort.key === column" :class="{'arrow arrow--asc': sort.order === 'asc', 'arrow arrow--desc': sort.order === 'desc'}"></div>
                             </th>
                             <th>&nbsp;</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        <tr v-for="record in response.records">
+                        <tr v-for="record in filteredRecords">
                             <td v-for="columnValue, column in record">{{ columnValue }}</td>
 
                             <td>
@@ -40,23 +42,79 @@
                     'table' : '',
                     displayable : [],
                     records: []
+                },
+                sort: {
+                    key: 'id',
+                    order: 'asc'
                 }
+            }
+        },
+        computed: {
+            filteredRecords () {
+
+                let data = this.response.records
+
+                if (this.sort.key) {
+                    data = _.orderBy(data, (i) => {
+                        let value = i[this.sort.key]
+
+                        if(!isNaN(parseFloat(value))) {
+                            return parseFloat(value)
+                        }
+
+                        return String(i[this.sort.key]).toLowerCase()
+                    }, this.sort.order)
+                }
+                return data
             }
         },
         props: ['endpoint'],
 
-        mounted() {
-            this.getRecords()
 
-
-        },
         methods: {
             getRecords () {
                 return axios.get(`${this.endpoint}`).then((response) => {
                     this.response = response.data.data
 
                 })
+            },
+
+            sortBy (column) {
+               this.sort.key = column
+               this.sort.order = this.sort.order === 'asc' ? 'desc' : 'asc'
             }
         },
+         mounted() {
+            this.getRecords()
+
+
+        }
     }
 </script>
+
+<style lang ="scss" scoped>
+    .sortable {
+        cursor: pointer
+    }
+
+    .arrow {
+        display: inline-block;
+        vertical-align: middle;
+        width:0;
+        height:0;
+        margin-left:5px;
+        opacity: .6;
+
+        &--asc {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-bottom: 4px solid #222;
+        }
+
+         &--desc {
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 4px solid #222;
+        }
+    }
+</style>
