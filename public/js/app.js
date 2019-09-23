@@ -1733,6 +1733,16 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -1744,7 +1754,8 @@ __webpack_require__.r(__webpack_exports__);
       sort: {
         key: 'id',
         order: 'asc'
-      }
+      },
+      quickSearchQuery: ''
     };
   },
   computed: {
@@ -1752,6 +1763,11 @@ __webpack_require__.r(__webpack_exports__);
       var _this = this;
 
       var data = this.response.records;
+      data = data.filter(function (row) {
+        return Object.keys(row).some(function (key) {
+          return String(row[key]).toLowerCase().indexOf(_this.quickSearchQuery.toLowerCase()) > -1;
+        });
+      });
 
       if (this.sort.key) {
         data = _.orderBy(data, function (i) {
@@ -37767,6 +37783,40 @@ var render = function() {
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "card-body" }, [
+      _c("div", { staticClass: "row" }, [
+        _c("div", { staticClass: "form-group col-md-10" }, [
+          _c("label", { attrs: { for: "filter" } }, [
+            _vm._v("Quick search current results")
+          ]),
+          _vm._v(" "),
+          _c("input", {
+            directives: [
+              {
+                name: "model",
+                rawName: "v-model",
+                value: _vm.quickSearchQuery,
+                expression: "quickSearchQuery"
+              }
+            ],
+            staticClass: "form-control",
+            attrs: { type: "text", id: "filter" },
+            domProps: { value: _vm.quickSearchQuery },
+            on: {
+              input: function($event) {
+                if ($event.target.composing) {
+                  return
+                }
+                _vm.quickSearchQuery = $event.target.value
+              }
+            }
+          })
+        ]),
+        _vm._v(" "),
+        _c("div", { staticClass: "form-group col-md-2" }, [
+          _vm._v("\n            " + _vm._s(_vm.quickSearchQuery) + "\n        ")
+        ])
+      ]),
+      _vm._v(" "),
       _c("div", { staticClass: "table-responsive" }, [
         _c("table", { staticClass: "table table-striped" }, [
           _c("thead", [
