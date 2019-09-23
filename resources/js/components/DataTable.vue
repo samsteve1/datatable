@@ -8,11 +8,18 @@
         <div class="row">
             <div class="form-group col-md-10">
                 <label for="filter">Quick search current results</label>
-                <input type="text" id="filter" class="form-control" v-model="quickSearchQuery">
+                <input type="text" id="filter" class="form-control" v-model="quickSearchQuery" >
             </div>
 
             <div class="form-group col-md-2">
-                {{ quickSearchQuery }}
+                <label for="limit">Display records</label>
+
+                <select id="limit" class="form-control" v-model="limit" @change="getRecords">
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="1000">1000</option>
+                    <option value="">All</option>
+                </select>
             </div>
         </div>
         <div class="table-responsive">
@@ -45,6 +52,7 @@
 </template>
 
 <script>
+import queryString from 'query-string';
     export default {
         data() {
             return {
@@ -57,7 +65,8 @@
                     key: 'id',
                     order: 'asc'
                 },
-                quickSearchQuery: ''
+                quickSearchQuery: '',
+                limit: 50
             }
         },
         computed: {
@@ -89,9 +98,15 @@
 
         methods: {
             getRecords () {
-                return axios.get(`${this.endpoint}`).then((response) => {
+
+                return axios.get(`${this.endpoint}?${this.getQueryParameters()}`).then((response) => {
                     this.response = response.data.data
 
+                })
+            },
+            getQueryParameters () {
+                return queryString.stringify({
+                    limit: this.limit
                 })
             },
 
@@ -103,10 +118,11 @@
          mounted() {
             this.getRecords()
 
-
         }
     }
+
 </script>
+
 
 <style lang ="scss" scoped>
     .sortable {
