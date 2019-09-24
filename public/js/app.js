@@ -1752,6 +1752,28 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -1766,7 +1788,12 @@ __webpack_require__.r(__webpack_exports__);
         order: 'asc'
       },
       quickSearchQuery: '',
-      limit: 50
+      limit: 50,
+      editing: {
+        id: null,
+        form: {},
+        errors: []
+      }
     };
   },
   computed: {
@@ -1812,6 +1839,26 @@ __webpack_require__.r(__webpack_exports__);
     sortBy: function sortBy(column) {
       this.sort.key = column;
       this.sort.order = this.sort.order === 'asc' ? 'desc' : 'asc';
+    },
+    edit: function edit(record) {
+      this.editing.errors = [];
+      this.editing.id = record.id;
+      this.editing.form = _.pick(record, this.response.updatable);
+      console.log(this.editing.form);
+    },
+    isUpdatable: function isUpdatable(column) {
+      return this.response.updatable.includes(column);
+    },
+    update: function update() {
+      var _this3 = this;
+
+      axios.patch("".concat(this.endpoint, "/").concat(this.editing.id), this.editing.form).then(function () {
+        _this3.getRecords().then(function () {
+          _this3.editing.id = null, _this3.editing.form = {};
+        });
+      })["catch"](function (error) {
+        _this3.editing.errors = error.response.data.errors;
+      });
     }
   },
   mounted: function mounted() {
@@ -38379,10 +38426,125 @@ var render = function() {
                 "tr",
                 [
                   _vm._l(record, function(columnValue, column) {
-                    return _c("td", [_vm._v(_vm._s(columnValue))])
+                    return _c(
+                      "td",
+                      [
+                        _vm.editing.id === record.id && _vm.isUpdatable(column)
+                          ? [
+                              _c("div", { staticClass: "form-group" }, [
+                                _c("input", {
+                                  directives: [
+                                    {
+                                      name: "model",
+                                      rawName: "v-model",
+                                      value: _vm.editing.form[column],
+                                      expression: "editing.form[column]"
+                                    }
+                                  ],
+                                  staticClass: "form-control ",
+                                  class: {
+                                    " is-invalid": _vm.editing.errors[column]
+                                  },
+                                  attrs: { type: "text" },
+                                  domProps: { value: _vm.editing.form[column] },
+                                  on: {
+                                    input: function($event) {
+                                      if ($event.target.composing) {
+                                        return
+                                      }
+                                      _vm.$set(
+                                        _vm.editing.form,
+                                        column,
+                                        $event.target.value
+                                      )
+                                    }
+                                  }
+                                }),
+                                _vm._v(" "),
+                                _vm.editing.errors[column]
+                                  ? _c(
+                                      "span",
+                                      { staticClass: "invalid-feedback" },
+                                      [
+                                        _c("strong", [
+                                          _vm._v(
+                                            _vm._s(
+                                              _vm.editing.errors[column][0]
+                                            )
+                                          )
+                                        ])
+                                      ]
+                                    )
+                                  : _vm._e()
+                              ])
+                            ]
+                          : [
+                              _vm._v(
+                                "\n                                " +
+                                  _vm._s(columnValue) +
+                                  "\n\n                            "
+                              )
+                            ]
+                      ],
+                      2
+                    )
                   }),
                   _vm._v(" "),
-                  _c("td")
+                  _c(
+                    "td",
+                    [
+                      _vm.editing.id !== record.id
+                        ? _c(
+                            "a",
+                            {
+                              attrs: { href: "#" },
+                              on: {
+                                click: function($event) {
+                                  $event.preventDefault()
+                                  return _vm.edit(record)
+                                }
+                              }
+                            },
+                            [_vm._v("Edit")]
+                          )
+                        : _vm._e(),
+                      _vm._v(" "),
+                      _vm.editing.id === record.id
+                        ? [
+                            _c(
+                              "a",
+                              {
+                                attrs: { href: "#" },
+                                on: {
+                                  click: function($event) {
+                                    $event.preventDefault()
+                                    return _vm.update($event)
+                                  }
+                                }
+                              },
+                              [_vm._v("Save")]
+                            ),
+                            _vm._v(" "),
+                            _c("br"),
+                            _vm._v(" "),
+                            _c(
+                              "a",
+                              {
+                                attrs: { href: "#" },
+                                on: {
+                                  click: function($event) {
+                                    $event.preventDefault()
+                                    _vm.editing.id = null
+                                  }
+                                }
+                              },
+                              [_vm._v("Cancel")]
+                            )
+                          ]
+                        : _vm._e()
+                    ],
+                    2
+                  )
                 ],
                 2
               )
