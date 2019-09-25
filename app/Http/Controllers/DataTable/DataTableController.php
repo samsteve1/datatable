@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Exception;
+use Illuminate\Database\QueryException;
 
 abstract class DataTableController extends Controller
 {
@@ -31,14 +31,14 @@ abstract class DataTableController extends Controller
      * @return Illuminate\Http\JsonResponse
      */
 
-    public function index()
+    public function index(Request $request)
     {
         return response()->json([
             'data' => [
                 'table' => $this->getTableName(),
                 'displayable' => array_values($this->getDisplayableColumns()),
                 'updatable' => $this->getUpdatableColumns(),
-                'records' => $this->getRecords()
+                'records' => $this->getRecords($request)
             ]
         ]);
     }
@@ -68,8 +68,71 @@ abstract class DataTableController extends Controller
     }
 
 
-    protected function getRecords()
+    protected function getRecords(Request $request)
     {
-        return $this->builder->limit(request()->limit)->orderBy('id', 'asc')->get($this->getDisplayableColumns());
+        $builder = $this->builder;
+
+        if($this->hasSearchQuery($request)) {
+            //dd('ok');
+            $builder = $this->buildSearch($builder, $request);
+        }
+
+        try {
+            return $this->builder->limit(request()->limit)->orderBy('id', 'asc')->get($this->getDisplayableColumns());
+        }
+        catch (QueryException $e) {
+            return [];
+        }
+
+
+    }
+
+    protected function hasSearchQuery(Request $request)
+    {
+        return count(array_filter($request->only(['column', 'operator', 'value']))) === 3;
+    }
+    protected function buildSearch(Builder $builder, Request $request)
+    {
+        $queryParts = $this->resolveQueryParts($request->operator, $request->value);
+
+        return $builder->where($request->column, $queryParts['operator'], $queryParts['value']);
+    }
+
+    protected function resolveQueryParts($operator, $value)
+    {
+        return array_get([
+            'equals' => [
+                'operator' => '=',
+                'value' => $value
+            ],
+            'contains' => [
+                'operator' => 'LIKE',
+                'value' => "%{$value}%"
+            ],
+            'starts_with' => [
+                'operator' => 'LIKE',
+                'value' => "{$value}%"
+            ],
+            'ends_with' => [
+                'operator' => 'LIKE',
+                'value' => "%{$value}%"
+            ],
+            'greater_than' => [
+                'operator' => '>',
+                'value' => $value
+            ],
+            'less_than' => [
+                'operator' => '<',
+                'value' => $value
+            ],
+            'less_than_equal' => [
+                'operator' => '<=',
+                'value' => $value
+            ],
+            'greater_than_equal' => [
+                'operator' => '>=',
+                'value' => $value
+            ]
+            ], $operator);
     }
 }
