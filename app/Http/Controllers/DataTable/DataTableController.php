@@ -11,6 +11,7 @@ use Illuminate\Database\QueryException;
 abstract class DataTableController extends Controller
 {
     protected $builder;
+    protected $allowCreation = true;
 
     abstract public function builder();
 
@@ -36,9 +37,13 @@ abstract class DataTableController extends Controller
         return response()->json([
             'data' => [
                 'table' => $this->getTableName(),
+                'creatable' => $this->getCreatableColumns(),
                 'displayable' => array_values($this->getDisplayableColumns()),
                 'updatable' => $this->getUpdatableColumns(),
-                'records' => $this->getRecords($request)
+                'records' => $this->getRecords($request),
+                'allow' => [
+                    'creation' => $this->allowCreation
+                ]
             ]
         ]);
     }
@@ -47,6 +52,11 @@ abstract class DataTableController extends Controller
     public function getDisplayableColumns()
     {
         return array_diff($this->getDatabaseColumns(), $this->builder->getModel()->getHidden());
+    }
+
+    public function getCreatableColumns()
+    {
+        return $this->getDisplayableColumns();
     }
 
     public function getUpdatableColumns()
@@ -62,11 +72,29 @@ abstract class DataTableController extends Controller
         return Schema::getColumnListing($this->builder->getModel()->getTable());
     }
 
+    /**
+     * Update a record
+     * @param mixed
+     * @param Illuminate\Http\Request
+     * @return void
+     */
     public function update($id, Request $request)
     {
         $this->builder->find($id)->update($request->only($this->getUpdatableColumns()));
     }
 
+    /**
+     * @param Request
+     * @return void
+     */
+    public function store (Request $request)
+    {
+
+        if (!$this->allowCreation) {
+            return;
+        }
+        $this->builder->create($request->only($this->getCreatableColumns()));
+    }
 
     protected function getRecords(Request $request)
     {

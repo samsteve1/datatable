@@ -17,7 +17,7 @@ class CreatePlansTable extends Migration
             $table->increments('id');
             $table->string('paystack_id');
             $table->decimal('price', 6, 2);
-            $table->boolean('active');
+            $table->boolean('active')->default(false);
             $table->timestamps();
         });
     }

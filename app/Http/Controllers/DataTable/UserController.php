@@ -8,6 +8,7 @@ use App\Http\Controllers\DataTableDataTableController;
 
 class UserController extends DataTableController
 {
+    protected $allowCreation = true;
     public function builder()
     {
         return  User::query();
@@ -17,6 +18,12 @@ class UserController extends DataTableController
     {
         return [
             'id', 'name', 'email', 'created_at', 'telephone'
+        ];
+    }
+    public function getCreatableColumns()
+    {
+        return [
+            'name', 'email', 'telephone'
         ];
     }
 

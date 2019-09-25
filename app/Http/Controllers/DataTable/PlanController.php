@@ -16,7 +16,14 @@ class PlanController extends DataTableController
     public function getDisplayableColumns()
     {
         return [
-            'id', 'paystack_id', 'price', 'active', 'created_at'
+            'id', 'paystack_id', 'price', 'active', 'created_at', 'updated_at'
+        ];
+    }
+
+    public function getCreatableColumns()
+    {
+        return [
+            'paystack_id', 'price', 'active'
         ];
     }
 
@@ -36,5 +43,18 @@ class PlanController extends DataTableController
     //     ]);
     //     $this->builder->find($id)->update($request->only($this->getUpdatableColumns()));
     // }
+
+    public function store(Request $request)
+    {
+        $this->validate($request, [
+            'paystack_id' => 'required',
+            'price' => 'required|numeric',
+            ]);
+
+        if (!$this->allowCreation) {
+            return;
+        }
+        $this->builder->create($request->only($this->getUpdatableColumns()));
+    }
 
 }

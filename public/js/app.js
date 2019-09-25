@@ -1806,14 +1806,44 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       response: {
         'table': '',
+        'creatable': [],
         displayable: [],
-        records: []
+        records: [],
+        allow: {}
       },
       sort: {
         key: 'id',
@@ -1823,6 +1853,11 @@ __webpack_require__.r(__webpack_exports__);
       limit: 50,
       editing: {
         id: null,
+        form: {},
+        errors: []
+      },
+      'creating': {
+        active: false,
         form: {},
         errors: []
       },
@@ -1898,8 +1933,28 @@ __webpack_require__.r(__webpack_exports__);
           _this3.editing.id = null, _this3.editing.form = {};
         });
       })["catch"](function (error) {
-        _this3.editing.errors = error.response.data.errors;
+        if (error.response.status == 422) {
+          _this3.editing.errors = error.response.data.errors;
+        }
       });
+    },
+    store: function store() {
+      var _this4 = this;
+
+      axios.post("".concat(this.endpoint), this.creating.form).then(function () {
+        _this4.getRecords().then(function () {
+          _this4.creating.active = false;
+          _this4.creating.form = {};
+          _this4.creating.errors = [];
+        });
+      })["catch"](function (error) {
+        if (error.response.status == 422) {
+          _this4.creating.errors = error.response.data.errors;
+        }
+      });
+    },
+    toggleCreationForm: function toggleCreationForm() {
+      this.creating.active = !this.creating.active;
     }
   },
   mounted: function mounted() {
@@ -38341,10 +38396,104 @@ var render = function() {
   var _c = _vm._self._c || _h
   return _c("div", { staticClass: "card" }, [
     _c("div", { staticClass: "card-header" }, [
-      _vm._v(_vm._s(_vm.response.table))
+      _vm._v("\n        " + _vm._s(_vm.response.table) + "\n        "),
+      _vm.response.allow.creation
+        ? _c(
+            "a",
+            {
+              staticClass: "float-right",
+              attrs: { href: "#" },
+              on: {
+                click: function($event) {
+                  $event.preventDefault()
+                  return _vm.toggleCreationForm($event)
+                }
+              }
+            },
+            [
+              _vm._v(
+                "\n            " +
+                  _vm._s(_vm.creating.active ? "Cancel" : "New record") +
+                  "\n        "
+              )
+            ]
+          )
+        : _vm._e()
     ]),
     _vm._v(" "),
     _c("div", { staticClass: "card-body" }, [
+      _vm.creating.active
+        ? _c("div", { staticClass: "well" }, [
+            _c(
+              "form",
+              {
+                staticClass: "form-horizontal",
+                attrs: { action: "#" },
+                on: {
+                  submit: function($event) {
+                    $event.preventDefault()
+                    return _vm.store($event)
+                  }
+                }
+              },
+              [
+                _vm._l(_vm.response.creatable, function(column, index) {
+                  return _c("div", { key: index, staticClass: "form-group" }, [
+                    _c(
+                      "label",
+                      {
+                        staticClass: "col-md-3 control-label",
+                        attrs: { for: column }
+                      },
+                      [_vm._v(_vm._s(column))]
+                    ),
+                    _vm._v(" "),
+                    _c("div", { staticClass: "col-md-6" }, [
+                      _c("input", {
+                        directives: [
+                          {
+                            name: "model",
+                            rawName: "v-model",
+                            value: _vm.creating.form[column],
+                            expression: "creating.form[column]"
+                          }
+                        ],
+                        staticClass: "form-control",
+                        class: { " is-invalid": _vm.creating.errors[column] },
+                        attrs: { type: "text", id: column },
+                        domProps: { value: _vm.creating.form[column] },
+                        on: {
+                          input: function($event) {
+                            if ($event.target.composing) {
+                              return
+                            }
+                            _vm.$set(
+                              _vm.creating.form,
+                              column,
+                              $event.target.value
+                            )
+                          }
+                        }
+                      }),
+                      _vm._v(" "),
+                      _vm.creating.errors[column]
+                        ? _c("span", { staticClass: "invalid-feedback" }, [
+                            _c("strong", [
+                              _vm._v(_vm._s(_vm.creating.errors[column][0]))
+                            ])
+                          ])
+                        : _vm._e()
+                    ])
+                  ])
+                }),
+                _vm._v(" "),
+                _vm._m(0)
+              ],
+              2
+            )
+          ])
+        : _vm._e(),
+      _vm._v(" "),
       _c(
         "form",
         {
@@ -38393,10 +38542,12 @@ var render = function() {
                     }
                   }
                 },
-                _vm._l(_vm.response.displayable, function(column) {
-                  return _c("option", { domProps: { value: column } }, [
-                    _vm._v(_vm._s(column))
-                  ])
+                _vm._l(_vm.response.displayable, function(column, index) {
+                  return _c(
+                    "option",
+                    { key: index, domProps: { value: column } },
+                    [_vm._v(_vm._s(column))]
+                  )
                 }),
                 0
               )
@@ -38493,7 +38644,7 @@ var render = function() {
                   }
                 }),
                 _vm._v(" "),
-                _vm._m(0)
+                _vm._m(1)
               ])
             ])
           ])
@@ -38583,8 +38734,8 @@ var render = function() {
             _c(
               "tr",
               [
-                _vm._l(_vm.response.displayable, function(column) {
-                  return _c("th", [
+                _vm._l(_vm.response.displayable, function(column, index) {
+                  return _c("th", { key: index }, [
                     _c(
                       "span",
                       {
@@ -38617,13 +38768,15 @@ var render = function() {
           _vm._v(" "),
           _c(
             "tbody",
-            _vm._l(_vm.filteredRecords, function(record) {
+            _vm._l(_vm.filteredRecords, function(record, index) {
               return _c(
                 "tr",
+                { key: index },
                 [
-                  _vm._l(record, function(columnValue, column) {
+                  _vm._l(record, function(columnValue, column, index) {
                     return _c(
                       "td",
+                      { key: index },
                       [
                         _vm.editing.id === record.id && _vm.isUpdatable(column)
                           ? [
@@ -38753,6 +38906,20 @@ var render = function() {
   ])
 }
 var staticRenderFns = [
+  function() {
+    var _vm = this
+    var _h = _vm.$createElement
+    var _c = _vm._self._c || _h
+    return _c("div", { staticClass: "form-group" }, [
+      _c("div", { staticClass: "col-md-6" }, [
+        _c(
+          "button",
+          { staticClass: "btn btn-primary", attrs: { type: "submit" } },
+          [_vm._v("Create")]
+        )
+      ])
+    ])
+  },
   function() {
     var _vm = this
     var _h = _vm.$createElement

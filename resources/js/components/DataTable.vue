@@ -1,17 +1,45 @@
 <template>
 
     <div class="card">
-        <div class="card-header">{{ response.table }}</div>
+        <div class="card-header">
+            {{ response.table }}
+            <a href="#" @click.prevent="toggleCreationForm" v-if="response.allow.creation" class="float-right">
+                {{ creating.active ? 'Cancel' : 'New record' }}
+            </a>
+        </div>
 
 
         <div class="card-body">
+
+            <div class="well" v-if="creating.active">
+                <form action="#" class="form-horizontal" @submit.prevent="store">
+                    <div class="form-group" v-for="(column, index) in response.creatable" :key="index">
+                        <label :for="column" class="col-md-3 control-label">{{ column }}</label>
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" :id="column" v-model="creating.form[column]" :class="{' is-invalid': creating.errors[column]}">
+                            <span class="invalid-feedback" v-if="creating.errors[column]">
+                                <strong>{{ creating.errors[column][0] }}</strong>
+                            </span>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary" type="submit">Create</button>
+                        </div>
+                    </div>
+
+
+                </form>
+            </div>
             <form action="#" @submit.prevent="getRecords">
                 <label for="search">Search</label>
 
                 <div class="row row-fluid">
                     <div class="form-group col-md-3">
                         <select class="form-control" v-model="search.column">
-                            <option v-for="column in response.displayable" :value="column">{{ column }}</option>
+                            <option v-for="(column, index) in response.displayable" :value="column" :key="index">{{ column }}</option>
                         </select>
                     </div>
                      <div class="form-group col-md-3">
@@ -58,7 +86,7 @@
                <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th v-for="column in response.displayable">
+                            <th v-for="(column, index) in response.displayable" :key="index">
                                <span class="sortable" @click="sortBy(column)"> {{ column }}</span>
 
                                <div v-if="sort.key === column" :class="{'arrow arrow--asc': sort.order === 'asc', 'arrow arrow--desc': sort.order === 'desc'}"></div>
@@ -69,8 +97,8 @@
 
                     <tbody>
 
-                        <tr v-for="record in filteredRecords">
-                            <td v-for="columnValue, column in record">
+                        <tr v-for="(record, index) in filteredRecords" :key="index">
+                            <td v-for="(columnValue, column, index) in record" :key="index">
                             <template v-if="editing.id === record.id  && isUpdatable(column)">
                                 <div class="form-group">
                                     <input type="text" class="form-control " :class="{' is-invalid': editing.errors[column]}"  v-model="editing.form[column]">
@@ -112,8 +140,10 @@ import queryString from 'query-string';
             return {
                 response: {
                     'table' : '',
+                    'creatable': [],
                     displayable : [],
-                    records: []
+                    records: [],
+                    allow: {}
                 },
                 sort: {
                     key: 'id',
@@ -123,6 +153,11 @@ import queryString from 'query-string';
                 limit: 50,
                 editing: {
                     id: null,
+                    form: {},
+                    errors: []
+                },
+                'creating': {
+                    active: false,
                     form: {},
                     errors: []
                 },
@@ -198,9 +233,30 @@ import queryString from 'query-string';
                         this.editing.form = {}
                     })
                 }).catch((error) => {
-                    this.editing.errors = error.response.data.errors;
+                    if (error.response.status == 422) {
+                        this.editing.errors = error.response.data.errors;
+                    }
+
                 })
-            }
+            },
+            store () {
+                axios.post(`${this.endpoint}`, this.creating.form).then(() => {
+                    this.getRecords().then(() => {
+                        this.creating.active = false
+                        this.creating.form = {}
+                        this.creating.errors = []
+                    })
+                }).catch((error) => {
+                    if (error.response.status == 422) {
+                        this.creating.errors = error.response.data.errors
+                    }
+
+                })
+            },
+
+            toggleCreationForm () {
+                this.creating.active = !this.creating.active;
+            },
 
         },
          mounted() {
@@ -238,3 +294,4 @@ import queryString from 'query-string';
         }
     }
 </style>
+div.user
