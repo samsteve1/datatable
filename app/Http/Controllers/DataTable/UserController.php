@@ -34,6 +34,16 @@ class UserController extends DataTableController
         ];
     }
 
+    public function getCustomColumnNames()
+    {
+        return [
+            'email' => 'Email address',
+            'name' => 'Full name',
+            'telephone' => 'Phone Number',
+            'created_at' => 'Date Registered'
+        ];
+    }
+
     public function update($id, Request $request)
     {
         $this->validate($request, [

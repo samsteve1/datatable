@@ -41,6 +41,7 @@ abstract class DataTableController extends Controller
                 'displayable' => array_values($this->getDisplayableColumns()),
                 'updatable' => $this->getUpdatableColumns(),
                 'records' => $this->getRecords($request),
+                'custom_columns' => $this->getCustomColumnNames(),
                 'allow' => [
                     'creation' => $this->allowCreation
                 ]
@@ -70,6 +71,11 @@ abstract class DataTableController extends Controller
     protected function getDatabaseColumns()
     {
         return Schema::getColumnListing($this->builder->getModel()->getTable());
+    }
+
+    public function getCustomColumnNames()
+    {
+        return [];
     }
 
     /**

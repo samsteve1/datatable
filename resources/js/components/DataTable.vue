@@ -14,7 +14,7 @@
             <div class="well" v-if="creating.active">
                 <form action="#" class="form-horizontal" @submit.prevent="store">
                     <div class="form-group" v-for="(column, index) in response.creatable" :key="index">
-                        <label :for="column" class="col-md-3 control-label">{{ column }}</label>
+                        <label :for="column" class="col-md-3 control-label">{{ response.custom_columns[column] || column}}</label>
                         <div class="col-md-6">
                             <input type="text" class="form-control" :id="column" v-model="creating.form[column]" :class="{' is-invalid': creating.errors[column]}">
                             <span class="invalid-feedback" v-if="creating.errors[column]">
@@ -87,7 +87,7 @@
                     <thead>
                         <tr>
                             <th v-for="(column, index) in response.displayable" :key="index">
-                               <span class="sortable" @click="sortBy(column)"> {{ column }}</span>
+                               <span class="sortable" @click="sortBy(column)"> {{ response.custom_columns[column] || column}}</span>
 
                                <div v-if="sort.key === column" :class="{'arrow arrow--asc': sort.order === 'asc', 'arrow arrow--desc': sort.order === 'desc'}"></div>
                             </th>
@@ -143,6 +143,7 @@ import queryString from 'query-string';
                     'creatable': [],
                     displayable : [],
                     records: [],
+                    custom_columns: [],
                     allow: {}
                 },
                 sort: {
