@@ -11,7 +11,10 @@ use Illuminate\Database\QueryException;
 abstract class DataTableController extends Controller
 {
     protected $builder;
+
     protected $allowCreation = true;
+
+    protected $allowDeletion = false;
 
     abstract public function builder();
 
@@ -43,7 +46,8 @@ abstract class DataTableController extends Controller
                 'records' => $this->getRecords($request),
                 'custom_columns' => $this->getCustomColumnNames(),
                 'allow' => [
-                    'creation' => $this->allowCreation
+                    'creation' => $this->allowCreation,
+                    'deletion' => $this->allowDeletion
                 ]
             ]
         ]);
@@ -118,7 +122,14 @@ abstract class DataTableController extends Controller
             return [];
         }
 
+    }
 
+    public function destroy($ids, Request $request)
+    {
+        if (!$this->allowDeletion) {
+            return;
+        }
+        $this->builder->whereIn('id', explode(',',  $ids))->delete();
     }
 
     protected function hasSearchQuery(Request $request)

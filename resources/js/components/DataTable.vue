@@ -1,103 +1,129 @@
 <template>
-
-    <div class="card">
-        <div class="card-header">
-            {{ response.table }}
-            <a href="#" @click.prevent="toggleCreationForm" v-if="response.allow.creation" class="float-right">
-                {{ creating.active ? 'Cancel' : 'New record' }}
-            </a>
-        </div>
-
-
-        <div class="card-body">
-
-            <div class="well" v-if="creating.active">
-                <form action="#" class="form-horizontal" @submit.prevent="store">
-                    <div class="form-group" v-for="(column, index) in response.creatable" :key="index">
-                        <label :for="column" class="col-md-3 control-label">{{ response.custom_columns[column] || column}}</label>
-                        <div class="col-md-6">
-                            <input type="text" class="form-control" :id="column" v-model="creating.form[column]" :class="{' is-invalid': creating.errors[column]}">
-                            <span class="invalid-feedback" v-if="creating.errors[column]">
-                                <strong>{{ creating.errors[column][0] }}</strong>
-                            </span>
-                        </div>
-                    </div>
-
-
-                    <div class="form-group">
-                        <div class="col-md-6">
-                            <button class="btn btn-primary" type="submit">Create</button>
-                        </div>
-                    </div>
-
-
-                </form>
+    <div>
+        <div class="card">
+            <div class="card-header">
+                {{ response.table }}
+                <a href="#" @click.prevent="toggleCreationForm" v-if="response.allow.creation" class="float-right">
+                    {{ creating.active ? 'Cancel' : 'New record' }}
+                </a>
             </div>
-            <form action="#" @submit.prevent="getRecords">
-                <label for="search">Search</label>
 
-                <div class="row row-fluid">
-                    <div class="form-group col-md-3">
-                        <select class="form-control" v-model="search.column">
-                            <option v-for="(column, index) in response.displayable" :value="column" :key="index">{{ column }}</option>
-                        </select>
-                    </div>
-                     <div class="form-group col-md-3">
-                        <select class="form-control" v-model="search.operator">
-                            <option value="equals">=</option>
-                            <option value="contains">contains</option>
-                            <option value="starts_with">starts with</option>
-                            <option value="ends_with">ends with</option>
-                            <option value="greater_than">greater than</option>
-                            <option value="less_than">less than</option>
-                            <option value="less_than_equal">less than or equal</option>
-                            <option value="greater_than_equal">greater than or equal</option>
-                        </select>
-                    </div>
-                     <div class="form-group col-md-6">
-                        <div class="input-group">
 
-                            <input type="text" id="search" v-model="search.value" class="form-control">
-                            <span class="input-group-btn">
-                                <button class="btn btn-primary" type="submit">Search</button>
-                            </span>
+            <div class="card-body">
+
+                <div class="well" v-if="creating.active">
+                    <form action="#" class="form-horizontal" @submit.prevent="store">
+                        <div class="form-group" v-for="(column, index) in response.creatable" :key="index">
+                            <label :for="column" class="col-md-3 control-label">{{ response.custom_columns[column] || column}}</label>
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" :id="column" v-model="creating.form[column]" :class="{' is-invalid': creating.errors[column]}">
+                                <span class="invalid-feedback" v-if="creating.errors[column]">
+                                    <strong>{{ creating.errors[column][0] }}</strong>
+                                </span>
+                            </div>
                         </div>
-                    </div>
+
+
+                        <div class="form-group">
+                            <div class="col-md-6">
+                                <button class="btn btn-primary" type="submit">Create</button>
+                            </div>
+                        </div>
+
+
+                    </form>
                 </div>
-            </form>
-        <div class="row">
-            <div class="form-group col-md-10">
-                <label for="filter">Quick search current results</label>
-                <input type="text" id="filter" class="form-control" v-model="quickSearchQuery" >
+                <form action="#" @submit.prevent="getRecords">
+                    <label for="search">Search</label>
+
+                    <div class="row row-fluid">
+                        <div class="form-group col-md-3">
+                            <select class="form-control" v-model="search.column">
+                                <option v-for="(column, index) in response.displayable" :value="column" :key="index">{{ column }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-3">
+                            <select class="form-control" v-model="search.operator">
+                                <option value="equals">=</option>
+                                <option value="contains">contains</option>
+                                <option value="starts_with">starts with</option>
+                                <option value="ends_with">ends with</option>
+                                <option value="greater_than">greater than</option>
+                                <option value="less_than">less than</option>
+                                <option value="less_than_equal">less than or equal</option>
+                                <option value="greater_than_equal">greater than or equal</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-md-6">
+                            <div class="input-group">
+
+                                <input type="text" id="search" v-model="search.value" class="form-control">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-primary" type="submit">Search</button>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            <div class="row">
+                <div class="form-group col-md-10">
+                    <label for="filter">Quick search current results</label>
+                    <input type="text" id="filter" class="form-control" v-model="quickSearchQuery" >
+                </div>
+
+                <div class="form-group col-md-2">
+                    <label for="limit">Display records</label>
+
+                    <select id="limit" class="form-control" v-model="limit" @change="getRecords">
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="1000">1000</option>
+                        <option value="">All</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="form-group col-md-2">
-                <label for="limit">Display records</label>
-
-                <select id="limit" class="form-control" v-model="limit" @change="getRecords">
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="1000">1000</option>
-                    <option value="">All</option>
-                </select>
             </div>
         </div>
-        <div class="table-responsive">
+        <div class="card">
+            <div class="card-heading" v-if="selected.length">
+
+                    <div class="btn-group">
+                        <a href="#" data-toggle="dropdown">With selected <span class="caret"></span></a>
+
+                        <ul class="dropdown-menu">
+                            <li><a href="#" @click.prevent="destroy(selected)">Delete</a></li>
+                        </ul>
+
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive" v-if="filteredRecords.length">
                <table class="table table-striped">
                     <thead>
                         <tr>
+                            <th v-if="canSelectItems"><input
+                             type="checkbox"
+                             @change="toggleAll"
+                             :checked="filteredRecords.length === selected.length"
+                             ></th>
                             <th v-for="(column, index) in response.displayable" :key="index">
                                <span class="sortable" @click="sortBy(column)"> {{ response.custom_columns[column] || column}}</span>
 
                                <div v-if="sort.key === column" :class="{'arrow arrow--asc': sort.order === 'asc', 'arrow arrow--desc': sort.order === 'desc'}"></div>
                             </th>
                             <th>&nbsp;</th>
+                             <th v-if="response.allow.deletion">&nbsp;</th>
                         </tr>
                     </thead>
 
                     <tbody>
 
                         <tr v-for="(record, index) in filteredRecords" :key="index">
+
+                            <td v-if="canSelectItems">
+                                <input type="checkbox" v-model="selected" :value="record.id">
+                            </td>
                             <td v-for="(columnValue, column, index) in record" :key="index">
                             <template v-if="editing.id === record.id  && isUpdatable(column)">
                                 <div class="form-group">
@@ -124,13 +150,15 @@
                                 </template>
 
                             </td>
+                            <td v-if="response.allow.deletion"><a href="#" @click.prevent="destroy(record.id)">Delete</a></td>
                         </tr>
                     </tbody>
                </table>
                </div>
+               <p v-else>No records</p>
+            </div>
         </div>
     </div>
-
 </template>
 
 <script>
@@ -146,6 +174,8 @@ import queryString from 'query-string';
                     custom_columns: [],
                     allow: {}
                 },
+                selected : [],
+
                 sort: {
                     key: 'id',
                     order: 'asc'
@@ -191,6 +221,9 @@ import queryString from 'query-string';
                     }, this.sort.order)
                 }
                 return data
+            },
+            canSelectItems () {
+                return this.filteredRecords.length <= 500
             }
         },
         props: ['endpoint'],
@@ -255,9 +288,28 @@ import queryString from 'query-string';
                 })
             },
 
+            destroy (record) {
+
+                if(!window.confirm('Sure you want to delete this?')) {
+                    return;
+                }
+                axios.delete(`${this.endpoint}/${record}`).then(() => {
+                    this.getRecords()
+                })
+                this.selected = []
+            },
+
             toggleCreationForm () {
                 this.creating.active = !this.creating.active;
             },
+            toggleAll () {
+                if (this.selected.length > 0) {
+                    this.selected = []
+                    return
+                }
+
+                this.selected = _.map(this.filteredRecords, 'id')
+            }
 
         },
          mounted() {
